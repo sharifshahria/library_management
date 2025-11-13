@@ -21,6 +21,7 @@ export default function Signup() {
       });
       const data = await res.json();
       setMessage(data.message);
+      location.href = '/login';
     } catch (err) {
       setMessage('Signup failed.');
     }

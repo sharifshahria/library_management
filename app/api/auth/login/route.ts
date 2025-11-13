@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import User from '@/lib/models/User';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export async function POST(req: Request) {
   await dbConnect();
@@ -21,5 +22,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Invalid email or password.' }, { status: 401 });
   }
 
-  return NextResponse.json({ message: 'Login successful.', user: { name: user.name, email: user.email } });
+  // Generate JWT token
+  const token = jwt.sign(
+    { userId: user._id, name: user.name, email: user.email },
+    process.env.JWT_SECRET || 'default_secret',
+    { expiresIn: '1h' }
+  );
+
+  return NextResponse.json({ message: 'Login successful.', token, user: { name: user.name, email: user.email } });
 }

@@ -21,6 +21,9 @@ export default function Login() {
       });
       const data = await res.json();
       setMessage(data.message);
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user',JSON.stringify(data.user));
+      location.href = '/welcome';
     } catch {
       setMessage('Login failed.');
     }
