@@ -14,3 +14,12 @@ export async function GET(req: Request) {
   });
   return NextResponse.json(books);
 }
+
+export async function POST(req: Request) {
+  await dbConnect();
+  const { title, author } = await req.json();
+  if (!title || !author) return NextResponse.json({ message: 'Title and author required.' }, { status: 400 });
+  const book = new Book({ title, author });
+  await book.save();
+  return NextResponse.json({ message: 'Book added.' });
+}
