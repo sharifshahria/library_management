@@ -3,17 +3,17 @@
 
 import React, { useEffect, useState } from 'react';
 
-export default function Welcome() {
-  const [user, setUser] = useState<{ name?: string; email?: string }>({});
 
-  useEffect(() => {
+export default function Welcome() {
+  const [user] = useState<{ name?: string; email?: string }>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('user');
       if (stored) {
-        setUser(JSON.parse(stored));
+        return JSON.parse(stored);
       }
     }
-  }, []);
+    return {};
+  });
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
