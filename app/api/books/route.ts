@@ -2,19 +2,15 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
 import Book from '@/lib/models/Book';
 
-export async function GET() {
+export async function GET(req: Request) {
   await dbConnect();
-  const books = await Book.find();
+  const { searchParams } = new URL(req.url);
+  const query = searchParams.get('q') || '';
+  const books = await Book.find({
+    $or: [
+      { title: { $regex: query, $options: 'i' } },
+      { author: { $regex: query, $options: 'i' } }
+    ]
+  });
   return NextResponse.json(books);
-}
-
-export async function POST(req: Request) {
-  await dbConnect();
-  const { title, author } = await req.json();
-  if (!title || !author) {
-    return NextResponse.json({ message: 'Title and author required.' }, { status: 400 });
-  }
-  const book = new Book({ title, author });
-  await book.save();
-  return NextResponse.json(book);
 }
