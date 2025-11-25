@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function BorrowPage() {
   const [query, setQuery] = useState('');
@@ -11,11 +11,10 @@ export default function BorrowPage() {
   const [sort, setSort] = useState('title');
   const [filter, setFilter] = useState('all');
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const fetchBooks = async (searchQuery = '') => {
     setLoading(true);
     setMessage('');
-    const res = await fetch(`/api/books?q=${encodeURIComponent(query)}`);
+    const res = await fetch(`/api/books?q=${encodeURIComponent(searchQuery)}`);
     let data = await res.json();
     // Filter
     if (filter === 'available') data = data.filter((b: any) => b.available);
@@ -28,6 +27,16 @@ export default function BorrowPage() {
     });
     setBooks(data);
     setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchBooks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, sort]);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchBooks(query);
   };
 
   const handleBorrow = async () => {
