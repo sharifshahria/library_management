@@ -179,6 +179,14 @@ export default function Dashboard() {
   const dateFormatter = (value?: string) =>
     value ? new Date(value).toLocaleString() : '—';
 
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    }
+    router.replace('/login');
+  };
+
   if (!authChecked || !authorized) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -195,13 +203,21 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-slate-900">Library Management Dashboard</h1>
           <p className="text-slate-600">Monitor circulation and curate your catalog in one place.</p>
         </div>
-        <button
-          onClick={fetchLoans}
-          className="self-start rounded-md border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
-          disabled={loadingLoans}
-        >
-          {loadingLoans ? 'Refreshing...' : 'Refresh Data'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchLoans}
+            className="rounded-md border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
+            disabled={loadingLoans}
+          >
+            {loadingLoans ? 'Refreshing...' : 'Refresh Data'}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="rounded-md border border-rose-200 px-5 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50"
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       {message && (

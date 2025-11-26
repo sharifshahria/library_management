@@ -26,6 +26,11 @@ export default function Login() {
       setMessage(data.message);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user',JSON.stringify(data.user));
+      if(data.user.isAdmin){
+        router.push('/dashboard');
+      }else{
+        router.push('/welcome');
+      }
       router.push('/welcome');
     } catch {
       setMessage('Login failed.');
