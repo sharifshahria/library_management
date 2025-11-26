@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Loan {
   _id: string;
@@ -22,6 +23,7 @@ interface Book {
 const emptyBook = { title: '', author: '' };
 
 export default function Dashboard() {
+  const router = useRouter();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [newBook, setNewBook] = useState(emptyBook);
@@ -32,6 +34,31 @@ export default function Dashboard() {
   const [loadingLoans, setLoadingLoans] = useState(false);
   const [loadingBooks, setLoadingBooks] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = localStorage.getItem('user');
+    if (!stored) {
+      setAuthChecked(true);
+      router.replace('/welcome');
+      return;
+    }
+    try {
+      const parsed = JSON.parse(stored);
+      if (!parsed.isAdmin) {
+        setAuthChecked(true);
+        router.replace('/welcome');
+        return;
+      }
+      setAuthorized(true);
+    } catch {
+      router.replace('/welcome');
+    } finally {
+      setAuthChecked(true);
+    }
+  }, [router]);
 
   const fetchLoans = async () => {
     setLoadingLoans(true);
@@ -57,9 +84,10 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+    if (!authorized) return;
     fetchLoans();
     fetchBooks();
-  }, []);
+  }, [authorized]);
 
   const handleReturn = async (id: string) => {
     setActionLoading(true);
@@ -150,6 +178,14 @@ export default function Dashboard() {
 
   const dateFormatter = (value?: string) =>
     value ? new Date(value).toLocaleString() : '—';
+
+  if (!authChecked || !authorized) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <p className="text-sm font-semibold text-slate-600">Checking admin access...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-10">

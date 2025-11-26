@@ -24,10 +24,14 @@ export async function POST(req: Request) {
 
   // Generate JWT token
   const token = jwt.sign(
-    { userId: user._id, name: user.name, email: user.email },
+    { userId: user._id, name: user.name, email: user.email, isAdmin: user.isAdmin },
     process.env.JWT_SECRET || 'default_secret',
     { expiresIn: '1h' }
   );
 
-  return NextResponse.json({ message: 'Login successful.', token, user: { name: user.name, email: user.email } });
+  return NextResponse.json({
+    message: 'Login successful.',
+    token,
+    user: { name: user.name, email: user.email, isAdmin: !!user.isAdmin },
+  });
 }
