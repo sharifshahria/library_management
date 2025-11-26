@@ -1,13 +1,16 @@
 "use client"
 
 
-import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { use, useState } from 'react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+      const router = useRouter();
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +26,7 @@ export default function Login() {
       setMessage(data.message);
       localStorage.setItem('token', data.token);
       localStorage.setItem('user',JSON.stringify(data.user));
-      location.href = '/welcome';
+      router.push('/welcome');
     } catch {
       setMessage('Login failed.');
     }

@@ -8,8 +8,12 @@ export default function Welcome() {
   const [user] = useState<{ name?: string; email?: string }>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('user');
-      if (stored) {
-        return JSON.parse(stored);
+      if (stored && stored !== 'undefined') {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          return {};
+        }
       }
     }
     return {};

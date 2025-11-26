@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 
 export default function Signup() {
@@ -8,6 +9,8 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+      const router = useRouter();
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +24,7 @@ export default function Signup() {
       });
       const data = await res.json();
       setMessage(data.message);
-      location.href = '/login';
+            router.push('/welcome');
     } catch (err) {
       setMessage('Signup failed.');
     }
