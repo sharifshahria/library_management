@@ -63,18 +63,7 @@ export default function Welcome() {
             >
               Return Books
             </Link>
-            <Link
-              href="/catalog"
-              className="rounded-md border border-gray-300 py-3 px-4 font-semibold hover:border-gray-400 transition text-center"
-            >
-              Browse Catalog
-            </Link>
-            <Link
-              href="/history"
-              className="rounded-md border border-gray-300 py-3 px-4 font-semibold hover:border-gray-400 transition text-center"
-            >
-              View History
-            </Link>
+
           </div>
         </div>
       </div>
