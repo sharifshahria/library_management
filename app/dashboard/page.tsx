@@ -8,6 +8,7 @@ interface Reservation {
   userEmail: string;
   bookId: { _id: string; title: string; author: string };
   reservedAt: string;
+  dueDate?: string;
   returned: boolean;
   returnedAt?: string;
 }
@@ -134,11 +135,16 @@ export default function Dashboard() {
     const totalReservations = reservations.length;
     const activeReservations = reservations.filter(r => !r.returned).length;
     const completedReturns = reservations.filter(r => r.returned).length;
+    const overdue = reservations.filter(r => {
+      if (r.returned || !r.dueDate) return false;
+      return new Date(r.dueDate).getTime() < Date.now();
+    }).length;
     return [
       { label: 'Total Books', value: totalBooks },
       { label: 'Active Reservations', value: activeReservations },
       { label: 'Completed Returns', value: completedReturns },
       { label: 'All Reservations', value: totalReservations },
+      { label: 'Overdue Items', value: overdue },
     ];
   }, [books, reservations]);
 
@@ -168,7 +174,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <section className="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {dashboardStats.map(stat => (
           <div key={stat.label} className="rounded-lg bg-white p-5 shadow-sm">
             <p className="text-sm uppercase tracking-wide text-slate-500">{stat.label}</p>
@@ -328,6 +334,7 @@ export default function Dashboard() {
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Book</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Borrower</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Reserved at</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-600">Due date</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Status</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Actions</th>
               </tr>
@@ -356,6 +363,16 @@ export default function Dashboard() {
                   <td className="px-4 py-4 text-slate-700">{reservation.userEmail}</td>
                   <td className="px-4 py-4 text-slate-600">
                     {dateFormatter(reservation.reservedAt)}
+                  </td>
+                  <td className="px-4 py-4 text-slate-600">
+                    {reservation.dueDate ? dateFormatter(reservation.dueDate) : '—'}
+                    {!reservation.returned &&
+                      reservation.dueDate &&
+                      new Date(reservation.dueDate).getTime() < Date.now() && (
+                        <span className="ml-2 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                          Overdue
+                        </span>
+                      )}
                   </td>
                   <td className="px-4 py-4">
                     {reservation.returned ? (
