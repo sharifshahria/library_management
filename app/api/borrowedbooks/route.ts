@@ -7,9 +7,16 @@ export async function GET(req: Request) {
   await dbConnect();
   const { searchParams } = new URL(req.url);
   const userEmail = searchParams.get('userEmail');
-  const query: any = { returned: false };
+  const status = searchParams.get('status') || 'active';
+
+  const query: any = {};
+  if (status === 'active') query.returned = false;
+  if (status === 'returned') query.returned = true;
   if (userEmail) query.userEmail = userEmail;
-  const borrows = await Borrow.find(query).populate('bookId');
+
+  const borrows = await Borrow.find(query)
+    .sort({ borrowedAt: -1 })
+    .populate('bookId');
   return NextResponse.json(borrows);
 }
 
@@ -21,6 +28,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'Invalid borrow record.' }, { status: 400 });
   }
   borrow.returned = true;
+  borrow.returnedAt = new Date();
   await borrow.save();
   // Mark book as available again
   const book = await Book.findById(borrow.bookId);

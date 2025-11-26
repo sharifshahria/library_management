@@ -3,11 +3,11 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 
-interface Reservation {
+interface Loan {
   _id: string;
   userEmail: string;
   bookId: { _id: string; title: string; author: string };
-  reservedAt: string;
+  borrowedAt: string;
   dueDate?: string;
   returned: boolean;
   returnedAt?: string;
@@ -22,25 +22,25 @@ interface Book {
 const emptyBook = { title: '', author: '' };
 
 export default function Dashboard() {
-  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
   const [books, setBooks] = useState<Book[]>([]);
   const [newBook, setNewBook] = useState(emptyBook);
   const [editValues, setEditValues] = useState(emptyBook);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [message, setMessage] = useState('');
-  const [loadingReservations, setLoadingReservations] = useState(false);
+  const [loadingLoans, setLoadingLoans] = useState(false);
   const [loadingBooks, setLoadingBooks] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchReservations = async () => {
-    setLoadingReservations(true);
+  const fetchLoans = async () => {
+    setLoadingLoans(true);
     try {
-      const res = await fetch('/api/reservation');
+      const res = await fetch('/api/borrowedbooks?status=all');
       const data = await res.json();
-      setReservations(data);
+      setLoans(data);
     } finally {
-      setLoadingReservations(false);
+      setLoadingLoans(false);
     }
   };
 
@@ -57,21 +57,21 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchReservations();
+    fetchLoans();
     fetchBooks();
   }, []);
 
   const handleReturn = async (id: string) => {
     setActionLoading(true);
     setMessage('');
-    const res = await fetch('/api/return', {
+    const res = await fetch('/api/borrowedbooks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reservationId: id }),
+      body: JSON.stringify({ borrowId: id }),
     });
     const data = await res.json();
-    setMessage(data.message || 'Reservation updated.');
-    await fetchReservations();
+    setMessage(data.message || 'Loan updated.');
+    await fetchLoans();
     setActionLoading(false);
   };
 
@@ -132,21 +132,21 @@ export default function Dashboard() {
 
   const dashboardStats = useMemo(() => {
     const totalBooks = books.length;
-    const totalReservations = reservations.length;
-    const activeReservations = reservations.filter(r => !r.returned).length;
-    const completedReturns = reservations.filter(r => r.returned).length;
-    const overdue = reservations.filter(r => {
+    const totalLoans = loans.length;
+    const activeLoans = loans.filter(r => !r.returned).length;
+    const completedReturns = loans.filter(r => r.returned).length;
+    const overdue = loans.filter(r => {
       if (r.returned || !r.dueDate) return false;
       return new Date(r.dueDate).getTime() < Date.now();
     }).length;
     return [
       { label: 'Total Books', value: totalBooks },
-      { label: 'Active Reservations', value: activeReservations },
+      { label: 'Active Loans', value: activeLoans },
       { label: 'Completed Returns', value: completedReturns },
-      { label: 'All Reservations', value: totalReservations },
+      { label: 'All Loans', value: totalLoans },
       { label: 'Overdue Items', value: overdue },
     ];
-  }, [books, reservations]);
+  }, [books, loans]);
 
   const dateFormatter = (value?: string) =>
     value ? new Date(value).toLocaleString() : '—';
@@ -160,11 +160,11 @@ export default function Dashboard() {
           <p className="text-slate-600">Monitor circulation and curate your catalog in one place.</p>
         </div>
         <button
-          onClick={fetchReservations}
+          onClick={fetchLoans}
           className="self-start rounded-md border border-slate-300 px-5 py-2 text-sm font-semibold text-slate-700 hover:bg-white"
-          disabled={loadingReservations}
+          disabled={loadingLoans}
         >
-          {loadingReservations ? 'Refreshing...' : 'Refresh Data'}
+          {loadingLoans ? 'Refreshing...' : 'Refresh Data'}
         </button>
       </header>
 
@@ -320,9 +320,9 @@ export default function Dashboard() {
       <section className="mt-8 rounded-xl bg-white p-6 shadow-sm">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-slate-900">Reservation history</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Loan history</h2>
             <p className="text-sm text-slate-600">
-              Track borrowed titles and mark items as returned.
+              Track every checkout, highlight overdue items, and close the loop on returns.
             </p>
           </div>
         </div>
@@ -333,68 +333,68 @@ export default function Dashboard() {
               <tr>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Book</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Borrower</th>
-                <th className="px-4 py-3 text-left font-semibold text-slate-600">Reserved at</th>
+                <th className="px-4 py-3 text-left font-semibold text-slate-600">Borrowed at</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Due date</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Status</th>
                 <th className="px-4 py-3 text-left font-semibold text-slate-600">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {loadingReservations && (
+              {loadingLoans && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-4 text-center text-slate-500">
-                    Loading reservations...
+                  <td colSpan={6} className="px-4 py-4 text-center text-slate-500">
+                    Loading loans...
                   </td>
                 </tr>
               )}
-              {!loadingReservations && reservations.length === 0 && (
+              {!loadingLoans && loans.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-4 text-center text-slate-500">
-                    No reservation records yet.
+                  <td colSpan={6} className="px-4 py-4 text-center text-slate-500">
+                    No loan records yet.
                   </td>
                 </tr>
               )}
-              {reservations.map(reservation => (
-                <tr key={reservation._id}>
+              {loans.map(loan => (
+                <tr key={loan._id}>
                   <td className="px-4 py-4 font-medium text-slate-900">
-                    {reservation.bookId?.title}
-                    <p className="text-xs text-slate-500">{reservation.bookId?.author}</p>
+                    {loan.bookId?.title}
+                    <p className="text-xs text-slate-500">{loan.bookId?.author}</p>
                   </td>
-                  <td className="px-4 py-4 text-slate-700">{reservation.userEmail}</td>
+                  <td className="px-4 py-4 text-slate-700">{loan.userEmail}</td>
+                  <td className="px-4 py-4 text-slate-600">{dateFormatter(loan.borrowedAt)}</td>
                   <td className="px-4 py-4 text-slate-600">
-                    {dateFormatter(reservation.reservedAt)}
-                  </td>
-                  <td className="px-4 py-4 text-slate-600">
-                    {reservation.dueDate ? dateFormatter(reservation.dueDate) : '—'}
-                    {!reservation.returned &&
-                      reservation.dueDate &&
-                      new Date(reservation.dueDate).getTime() < Date.now() && (
+                    {loan.dueDate ? dateFormatter(loan.dueDate) : '—'}
+                    {!loan.returned &&
+                      loan.dueDate &&
+                      new Date(loan.dueDate).getTime() < Date.now() && (
                         <span className="ml-2 rounded-full bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700">
                           Overdue
                         </span>
                       )}
                   </td>
                   <td className="px-4 py-4">
-                    {reservation.returned ? (
-                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
-                        Returned
-                      </span>
+                    {loan.returned ? (
+                      <>
+                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                          Returned
+                        </span>
+                        {loan.returnedAt && (
+                          <p className="mt-1 text-xs text-slate-500">
+                            {dateFormatter(loan.returnedAt)}
+                          </p>
+                        )}
+                      </>
                     ) : (
                       <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
                         Borrowed
                       </span>
                     )}
-                    {reservation.returned && reservation.returnedAt && (
-                      <p className="mt-1 text-xs text-slate-500">
-                        {dateFormatter(reservation.returnedAt)}
-                      </p>
-                    )}
                   </td>
                   <td className="px-4 py-4">
-                    {!reservation.returned && (
+                    {!loan.returned && (
                       <button
                         className="rounded-md bg-emerald-600 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white hover:bg-emerald-500 disabled:opacity-60"
-                        onClick={() => handleReturn(reservation._id)}
+                        onClick={() => handleReturn(loan._id)}
                         disabled={actionLoading}
                       >
                         {actionLoading ? 'Updating...' : 'Mark returned'}
