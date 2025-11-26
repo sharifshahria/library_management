@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from 'react';
-
+import { useRouter } from 'next/navigation';
 interface Book {
   _id: string;
   title: string;
@@ -15,6 +15,7 @@ const sorters: Record<string, (a: Book, b: Book) => number> = {
 };
 
 export default function BorrowPage() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [books, setBooks] = useState<Book[]>([]);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -25,6 +26,12 @@ export default function BorrowPage() {
   const [loading, setLoading] = useState(false);
   const [sort, setSort] = useState<keyof typeof sorters>('title');
   const [filter, setFilter] = useState<'all' | 'available' | 'borrowed'>('all');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
 
   const minDueDate = useMemo(() => {
     const tomorrow = new Date();
@@ -112,6 +119,14 @@ export default function BorrowPage() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-6xl space-y-8">
+        <div className="flex justify-end">
+          <button
+            className="text-sm font-semibold text-rose-600 hover:text-rose-500"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
         <header className="space-y-3 text-center">
           <p className="text-sm uppercase tracking-wide text-slate-500">Catalog</p>
           <h1 className="text-3xl font-bold text-slate-900">Borrow from the library</h1>

@@ -3,9 +3,11 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 
 export default function Welcome() {
+  const router = useRouter();
   const [user] = useState<{ name?: string; email?: string }>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('user');
@@ -20,9 +22,23 @@ export default function Welcome() {
     return {};
   });
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center space-y-6">
+        <div className="flex justify-end">
+          <button
+            className="text-sm font-semibold text-rose-600 hover:text-rose-500"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
         <div>
           <h2 className="text-3xl font-bold mb-2">Welcome back</h2>
           <p className="text-gray-600">Glad to have you in the library portal.</p>

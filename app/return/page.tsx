@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useMemo, useState } from 'react';
-
+import { useRouter } from 'next/navigation';
 interface Borrow {
   _id: string;
   bookId: { _id: string; title: string; author: string };
@@ -11,6 +11,7 @@ interface Borrow {
 }
 
 export default function ReturnPage() {
+  const router = useRouter();
   const [borrows, setBorrows] = useState<Borrow[]>([]);
   const [userEmail, setUserEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -31,6 +32,12 @@ export default function ReturnPage() {
       }
     }
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
 
   const fetchBorrows = async (email: string) => {
     if (!email) return;
@@ -106,6 +113,14 @@ export default function ReturnPage() {
   return (
     <div className="min-h-screen bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-5xl space-y-8">
+        <div className="flex justify-end">
+          <button
+            className="text-sm font-semibold text-rose-600 hover:text-rose-500"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </div>
         <header className="space-y-3 text-center">
           <p className="text-sm uppercase tracking-wide text-slate-500">Returns</p>
           <h1 className="text-3xl font-bold text-slate-900">Manage borrowed books</h1>
